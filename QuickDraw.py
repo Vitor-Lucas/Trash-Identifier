@@ -6,7 +6,6 @@ it was really fun to program it
 
 '''
 
-
 def get_image(categoria:str):
     # Gets an image
     qd = QuickDrawData()
