@@ -1,6 +1,5 @@
 import cv2
 import argparse
-
 from ultralytics import YOLO
 import supervision as sv
 import numpy as np
@@ -16,7 +15,7 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="YOLOv8 live")
     parser.add_argument(
         "--webcam-resolution",
-        default=[1280, 720],
+        default=[640, 480],
         nargs=2,
         type=int
     )
@@ -34,33 +33,35 @@ def main():
     model = YOLO("model.pt")
 
     box_annotatar = sv.BoxAnnotator(
-        thickness = 2,
-        text_thickness = 2,
-        text_scale = 1
+        thickness=2,
+        text_thickness=2,
+        text_scale=1
     )
 
     zone = sv.PolygonZone(polygon=ZONE_POLYGON, frame_resolution_wh=tuple(args.webcam_resolution))
     zone_annotator = sv.PolygonZoneAnnotator(
-        zone = zone,
-        color = sv.Color.red(),
-        thickness = 2,
-        text_thickness = 4,
-        text_scale = 1
+        zone=zone,
+        color=sv.Color.red(),
+        thickness=2,
+        text_thickness=4,
+        text_scale=1
     )
+    custom_labels = {
+        0: "Papelao",
+        1: "Bateria",
+        2: "Metal",
+        3: "Plastico"
+    }
 
     while True:
         ret, frame = cap.read()
 
         result = model(frame)[0]
-        #talvez essa esteja certa
         detections = sv.Detections.from_ultralytics(result)
-        #detections = sv.Detections.from_yolov8(result)
         detections = detections[detections.class_id != 0]
-        print("detections")
-        for det in detections:
-            print(det)
+
         labels = [
-            f"{model.model.names[class_id]} {confidence:0.2f}"
+            f"{custom_labels.get(class_id, 'Desconhecido')} {confidence:0.2f}"
             for _, _, confidence, class_id, _, _
             in detections
         ]
